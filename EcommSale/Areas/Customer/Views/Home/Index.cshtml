@@ -1,8 +1,122 @@
-﻿@{
+﻿@using ECommSale.Models;
+@using X.Web.PagedList
+@model X.PagedList.IPagedList<Product>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<nav class="navbar navbar-expand-lg bg-dark" style="border-radius: 10px">
+    <div class="container-fluid">
+        <!-- Left side of the navbar -->
+        <div class="navbar-nav me-auto">
+        </div>
+
+        <!-- Right side of the navbar -->
+        <button class="btn btn-outline-light me-2" id="toggleSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <!-- Button to refresh product list -->
+        <form method="post">
+            <button class="btn btn-outline-light" type="submit" name="refreshProducts"><i class="fa-solid fa-arrows-rotate"></i></button>
+        </form>
+    </div>
+</nav>
+
+<div id="searchRegion" class="bg-light" style="display: none; padding: 10px; width: 100%; border-radius: 10px; border: solid; border-color: black">
+    <form method="post" class="row g-3 align-items-center">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label for="minPrice" class="form-label text-dark fw-bold">Min price</label>
+                <input type="number" class="form-control" id="minPrice" name="minPrice" placeholder="Price higher than..." />
+            </div>
+            <div class="col-md-4">
+                <label for="maxPrice" class="form-label text-dark fw-bold">Max price</label>
+                <input type="number" class="form-control" id="maxPrice" name="maxPrice" placeholder="Price lower than..." />
+            </div>
+            <div class="col-md-4">
+                <label for="productName" class="form-label text-dark fw-bold">Name</label>
+                <input type="text" class="form-control" id="productName" name="productName" placeholder="Name contains..." />
+            </div>
+        </div>
+        <div class="row g-3 align-items-center mt-3">
+            <div class="col-md-4">
+                <label for="category" class="form-label text-dark fw-bold">Category</label>
+                <select id="category" class="form-control" name="category">
+                    <option value="">Select category...</option>
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.CategoryID">@category.CategoryName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="specialTag" class="form-label text-dark fw-bold">Brand</label>
+                <select id="specialTag" class="form-control" name="specialTag">
+                    <option value="">Select brand...</option>
+                    @foreach (var specialTag in ViewBag.SpecialTags)
+                    {
+                        <option value="@specialTag.SpecialTagID">@specialTag.SpecialTagName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label></label>
+                <button type="submit" class="btn btn-dark form-control">Search</button>
+            </div>
+        </div>
+
+    </form>
 </div>
+<br />
+<br />
+<div class="row container">
+    @foreach (var product in Model)
+    {
+        <div class="col-4">
+            <div class="card mb-4 border-white">
+                <div class="card-header border-white">
+                    <h4 class="my-0 font-weight-normal">
+                        <label class="text-light" style="font-size: 20px;">@product.ProductName</label>
+                    </h4>
+                </div>
+                <img src="~/@product.Image" alt="Card Image" class="card-img-top border-white" style="height: 320px;" />
+                <div class="card-header border-white">
+                    <h4 class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <label class="text-light" style="font-size: 20px;"><b>Price: @string.Format("{0:N0} VND", product.Price)</b></label>
+                        </div>
+                        <a asp-action="Details" asp-controller="Home" asp-route-id="@product.ProductID" class="btn pull-right btn-outline-light">Details</a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<div class="text-black">
+    @Html.PagedListPager(Model, c => Href("~/Customer/Home/Index?page=" + c), PagedListRenderOptions.PageNumbersOnly)
+</div>
+
+@section Scripts {
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var msgC = '@TempData["check"]'
+            var msgA = '@TempData["add"]'
+            if (msgC) {
+                alertify.success(msgC);
+            }
+            else if (msgA) {
+                alertify.success(msgA);
+            }
+        })
+    </script>
+    <script>
+        // JavaScript to toggle visibility of search region
+        document.getElementById('toggleSearchBtn').addEventListener('click', function () {
+            var searchRegion = document.getElementById('searchRegion');
+            if (searchRegion.style.display === 'none') {
+                searchRegion.style.display = 'block';
+            } else {
+                searchRegion.style.display = 'none';
+            }
+        });
+    </script>
+}

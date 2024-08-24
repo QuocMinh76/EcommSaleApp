@@ -1,0 +1,26 @@
+﻿@using ECommSale.Models
+@model List<Product>
+
+<div class="row">
+    @foreach (var similarProduct in Model)
+    {
+        <div class="col-3">
+            <div class="card mb-4 border-white">
+                <div class="card-header border-white">
+                    <h4 class="my-0 font-weight-normal">
+                        <label class="text-black" style="font-size: 16px;">@similarProduct.ProductName</label>
+                    </h4>
+                </div>
+                <img src="~/@similarProduct.Image" alt="Card Image" class="card-img-top border-white" style="height: 240px;" />
+                <div class="card-header border-white">
+                    <h4 class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <label class="text-black" style="font-size: 16px;"><b>Price: @string.Format("{0:N0} VND", similarProduct.Price)</b></label>
+                        </div>
+                        <a asp-action="Details" asp-controller="Home" asp-route-id="@similarProduct.ProductID" class="btn pull-right btn-outline-light" style="width: 80px">Details</a>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    }
+</div>
