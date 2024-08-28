@@ -1,0 +1,35 @@
+﻿@using ECommSale.Models;
+@model IEnumerable<Brand>
+@{
+    ViewData["Title"] = "Index";
+    ViewData["ControllerName"] = ViewContext.RouteData.Values["controller"];
+}
+<br />
+<div class="row">
+    <div class="col-6">
+        <h2 class="text-info">Brand List</h2>
+    </div>
+    <div class="col-6 text-right">
+        <a asp-action="Create" class="btn btn-info"><i class="fa-solid fa-plus"></i>&nbsp; New Brand</a>
+    </div>
+</div>
+<br />
+<div>
+    <table class="table table-striped border">
+        <tr class="table-info">
+            <th>
+                @Html.DisplayNameFor(b=> b.BrandName)
+            </th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.BrandName</td>
+                <td>
+                    <partial name="_ButtonPartial" model="@item.BrandID" />
+                </td>
+            </tr>
+        }
+    </table>
+</div>
