@@ -20,7 +20,7 @@ namespace EcommSale.Areas.Customer.Controllers
             _db = db;
         }
 
-        public IActionResult Index(string productName, decimal? minPrice, decimal? maxPrice, int? category, int? specialTag, int? page)
+        public IActionResult Index(string productName, decimal? minPrice, decimal? maxPrice, int? brand, int? category, int? page)
         {
             //Load query sản phẩm
             var query = _db.Product.Include(c => c.Category).Include(f => f.Brand).AsQueryable();
@@ -46,9 +46,9 @@ namespace EcommSale.Areas.Customer.Controllers
                 query = query.Where(p => p.CategoryID == category);
             }
 
-            if (specialTag.HasValue)
+            if (brand.HasValue)
             {
-                query = query.Where(p => p.BrandID == specialTag);
+                query = query.Where(p => p.BrandID == brand);
             }
 
             // Chuyển cái query thành một danh sách có pageList
@@ -56,7 +56,7 @@ namespace EcommSale.Areas.Customer.Controllers
 
             // Chuyển các giá trị của mỗi loại sang bên view
             ViewBag.Categories = _db.Category.ToList();
-            ViewBag.SpecialTags = _db.Brand.ToList();
+            ViewBag.Brands = _db.Brand.ToList();
 
             // Trả ds sản phẩm về trang hiển thị
             return View(products);
@@ -113,7 +113,7 @@ namespace EcommSale.Areas.Customer.Controllers
             var prod2Price = (product2.Price - minPrice) / (maxPrice - minPrice);
 
             double distance = (double)Math.Abs(prod2Price - prod1Price);
-            // Nếu cả hai sản phẩm có cùng SpecialTag
+            // Nếu cả hai sản phẩm có cùng Brand
             if (product1.Brand.BrandName == product2.Brand.BrandName)
             {
                 distance += 0; // Trả về khoảng cách 0

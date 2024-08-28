@@ -9,6 +9,7 @@ namespace ECommSale.Models
         public int ProductID { get; set; }
 
         [Required]
+        [Display(Name = "Product Name")]
         public string ProductName { get; set; }
 
         public decimal Price { get; set; }
@@ -32,7 +33,7 @@ namespace ECommSale.Models
         [ForeignKey("CategoryID")]
         public Category Category { get; set; }
 
-        [Display(Name = "Special Tag")]
+        [Display(Name = "Brand")]
         [Required]
         public int BrandID { get; set; }
         [ForeignKey("BrandID")]

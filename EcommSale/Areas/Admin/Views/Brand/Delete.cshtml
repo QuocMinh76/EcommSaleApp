@@ -1,0 +1,32 @@
+﻿@using ECommSale.Models;
+@model Brand
+@{
+    ViewData["Title"] = "Delete";
+}
+<br />
+<h2 class="text-info">Delete Brand</h2>
+<form asp-action="Delete" method="post">
+    <div class="p-4 rounded border">
+        <input type="hidden" asp-for="BrandID" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group row">
+            <div class="col-2">
+                <label asp-for="BrandName"></label>
+            </div>
+            <div class="col-5">
+                <input asp-for="BrandName" readonly="readonly" class="form-control" />
+            </div>
+            <span asp-validation-for="BrandName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-danger" value="Delete" />
+            <a asp-action="Index" class="btn btn-success">Back to list</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

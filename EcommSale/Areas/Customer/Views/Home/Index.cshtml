@@ -48,12 +48,12 @@
                 </select>
             </div>
             <div class="col-md-4">
-                <label for="specialTag" class="form-label text-dark fw-bold">Brand</label>
-                <select id="specialTag" class="form-control" name="specialTag">
+                <label for="brand" class="form-label text-dark fw-bold">Brand</label>
+                <select id="brand" class="form-control" name="brand">
                     <option value="">Select brand...</option>
-                    @foreach (var specialTag in ViewBag.SpecialTags)
+                    @foreach (var brand in ViewBag.Brands)
                     {
-                        <option value="@specialTag.SpecialTagID">@specialTag.SpecialTagName</option>
+                        <option value="@brand.BrandID">@brand.BrandName</option>
                     }
                 </select>
             </div>

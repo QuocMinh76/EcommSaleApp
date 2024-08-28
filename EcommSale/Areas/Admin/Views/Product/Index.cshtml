@@ -1,0 +1,66 @@
+﻿@using EcommSale.Models;
+@model IEnumerable<ECommSale.Models.Product>
+@{
+    ViewData["Title"] = "Index";
+    ViewData["ControllerName"] = ViewContext.RouteData.Values["controller"];
+}
+
+<br />
+<div class="row">
+    <div class="col-6">
+        <h2 class="text-info">Product List</h2>
+    </div>
+    <div class="col-6 text-right">
+        <a asp-action="Create" class="btn btn-info"><i class="fa-solid fa-plus"></i>&nbsp; New Product</a>
+    </div>
+</div>
+<br/>
+<div>
+    <table class="table table-striped border">
+        <tr class="table-info">
+            <th>
+                @Html.DisplayNameFor(c=>c.ProductName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(c => c.ProductColor)
+            </th>
+            <th>
+                @Html.DisplayNameFor(c=>c.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(c =>c.ProductCount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(c => c.CategoryID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(c => c.BrandID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(c => c.IsAvailable)
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td> 
+                <td>@item.ProductColor</td>
+                <td>@string.Format("{0:N0} VND", item.Price)</td>
+                <td>@item.ProductCount</td>
+                <td>@item.CategoryID</td>
+                <td>@item.BrandID</td>
+                @if (@item.IsAvailable)
+                {
+                    <td>Còn sản phẩm</td>
+                }
+                else
+                {
+                    <td>Hết sản phẩm</td>
+                }   
+                <td>
+                    <partial name="_ButtonPartial" model="@item.ProductID"/>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
