@@ -56,3 +56,9 @@ body {
 .login-logout-card .card-body {
     padding: 10px 20px;
 }
+
+/*color*/
+
+.yellow-shop {
+    background-color: rgb(248,255,109);
+}

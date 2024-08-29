@@ -1,21 +1,21 @@
 ﻿@using ECommSale.Models;
-@using X.Web.PagedList
+@using X.Web.PagedList;
 @model X.PagedList.IPagedList<Product>
 @{
     ViewData["Title"] = "Home Page";
 }
 
-<nav class="navbar navbar-expand-lg bg-dark" style="border-radius: 10px">
+<nav class="navbar navbar-expand-lg bg-light" style="border: solid 2px ;border-radius: 10px">
     <div class="container-fluid">
         <!-- Left side of the navbar -->
         <div class="navbar-nav me-auto">
         </div>
 
         <!-- Right side of the navbar -->
-        <button class="btn btn-outline-light me-2" id="toggleSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="btn btn-outline-dark me-2" id="toggleSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
         <!-- Button to refresh product list -->
         <form method="post">
-            <button class="btn btn-outline-light" type="submit" name="refreshProducts"><i class="fa-solid fa-arrows-rotate"></i></button>
+            <button class="btn btn-outline-dark" type="submit" name="refreshProducts"><i class="fa-solid fa-arrows-rotate"></i></button>
         </form>
     </div>
 </nav>
@@ -59,7 +59,7 @@
             </div>
             <div class="col-md-4">
                 <label></label>
-                <button type="submit" class="btn btn-dark form-control">Search</button>
+                <button type="submit" class="btn yellow-shop form-control">Search</button>
             </div>
         </div>
 
@@ -71,20 +71,20 @@
     @foreach (var product in Model)
     {
         <div class="col-4">
-            <div class="card mb-4 border-white">
-                <div class="card-header border-white">
+            <div class="card mb-4 border-dark">
+                <div class="card-header border-dark yellow-shop">
                     <h4 class="my-0 font-weight-normal">
-                        <label class="text-light" style="font-size: 20px;">@product.ProductName</label>
+                        <label class="text-black" style="font-size: 20px;">@product.ProductName</label>
                     </h4>
                 </div>
-                <img src="~/@product.Image" alt="Card Image" class="card-img-top border-white" style="height: 320px;" />
-                <div class="card-header border-white">
-                    <h4 class="d-flex justify-content-between align-items-center">
+                <img src="~/@product.Image" alt="Card Image" class="card-img-top border-dark" style="height: 320px; " />
+                <div class="card-header yellow-shop border border-dark">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div class="btn-group">
-                            <label class="text-light" style="font-size: 20px;"><b>Price: @string.Format("{0:N0} VND", product.Price)</b></label>
+                            <label class="text-black" style="font-size: 20px;"><b>Price: @string.Format("{0:N0} VND", product.Price)</b></label>
                         </div>
-                        <a asp-action="Details" asp-controller="Home" asp-route-id="@product.ProductID" class="btn pull-right btn-outline-light">Details</a>
-                    </h4>
+                        <a asp-action="Details" asp-controller="Home" asp-route-id="@product.ProductID" class="btn pull-right btn-outline-dark">Details</a>
+                    </div>
                 </div>
             </div>
         </div>
