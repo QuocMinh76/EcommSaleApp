@@ -22,7 +22,7 @@ namespace EcommSale.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ECommSale.Models.ApplicationUser", b =>
+            modelBuilder.Entity("EcommSale.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -93,7 +93,7 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Brand", b =>
+            modelBuilder.Entity("EcommSale.Models.Brand", b =>
                 {
                     b.Property<int>("BrandID")
                         .ValueGeneratedOnAdd()
@@ -110,7 +110,7 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("Brand");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Category", b =>
+            modelBuilder.Entity("EcommSale.Models.Category", b =>
                 {
                     b.Property<int>("CategoryID")
                         .ValueGeneratedOnAdd()
@@ -127,7 +127,7 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("Category");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Comment", b =>
+            modelBuilder.Entity("EcommSale.Models.Comment", b =>
                 {
                     b.Property<int>("CommentID")
                         .ValueGeneratedOnAdd()
@@ -164,7 +164,7 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("Comment");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Order", b =>
+            modelBuilder.Entity("EcommSale.Models.Order", b =>
                 {
                     b.Property<int>("OrderID")
                         .ValueGeneratedOnAdd()
@@ -189,7 +189,7 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("Order");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.OrderDetails", b =>
+            modelBuilder.Entity("EcommSale.Models.OrderDetails", b =>
                 {
                     b.Property<int>("OrderID")
                         .HasColumnType("int");
@@ -210,7 +210,7 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("OrderDetails");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Product", b =>
+            modelBuilder.Entity("EcommSale.Models.Product", b =>
                 {
                     b.Property<int>("ProductID")
                         .ValueGeneratedOnAdd()
@@ -404,15 +404,15 @@ namespace EcommSale.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Comment", b =>
+            modelBuilder.Entity("EcommSale.Models.Comment", b =>
                 {
-                    b.HasOne("ECommSale.Models.ApplicationUser", "Commenter")
+                    b.HasOne("EcommSale.Models.ApplicationUser", "Commenter")
                         .WithMany()
                         .HasForeignKey("CommenterID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ECommSale.Models.Product", "Product")
+                    b.HasOne("EcommSale.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -423,9 +423,9 @@ namespace EcommSale.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Order", b =>
+            modelBuilder.Entity("EcommSale.Models.Order", b =>
                 {
-                    b.HasOne("ECommSale.Models.ApplicationUser", "User")
+                    b.HasOne("EcommSale.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -434,15 +434,15 @@ namespace EcommSale.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.OrderDetails", b =>
+            modelBuilder.Entity("EcommSale.Models.OrderDetails", b =>
                 {
-                    b.HasOne("ECommSale.Models.Order", "Order")
+                    b.HasOne("EcommSale.Models.Order", "Order")
                         .WithMany()
                         .HasForeignKey("OrderID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ECommSale.Models.Product", "Product")
+                    b.HasOne("EcommSale.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -453,15 +453,15 @@ namespace EcommSale.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("ECommSale.Models.Product", b =>
+            modelBuilder.Entity("EcommSale.Models.Product", b =>
                 {
-                    b.HasOne("ECommSale.Models.Brand", "Brand")
+                    b.HasOne("EcommSale.Models.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("BrandID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ECommSale.Models.Category", "Category")
+                    b.HasOne("EcommSale.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -483,7 +483,7 @@ namespace EcommSale.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ECommSale.Models.ApplicationUser", null)
+                    b.HasOne("EcommSale.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -492,7 +492,7 @@ namespace EcommSale.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ECommSale.Models.ApplicationUser", null)
+                    b.HasOne("EcommSale.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -507,7 +507,7 @@ namespace EcommSale.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ECommSale.Models.ApplicationUser", null)
+                    b.HasOne("EcommSale.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -516,7 +516,7 @@ namespace EcommSale.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ECommSale.Models.ApplicationUser", null)
+                    b.HasOne("EcommSale.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

@@ -1,10 +1,10 @@
-﻿@model ECommSale.Models.Product
+﻿@model EcommSale.Models.Product
 @{
     ViewData["Title"] = "Delete";
 }
 <br />
 
-<h2 class="text-info">Delete Product</h2>
+<h2 class="text-black">Delete Product</h2>
 <form asp-action="Delete" method="post">
     <div class="p-4 rounded border row">
         <input type="hidden" asp-for="ProductID" />
@@ -82,8 +82,8 @@
             </div>
 
             <div class="mb-3">
-                <input type="submit" class="btn btn-primary" value="Delete" />
-                <a asp-action="Index" class="btn btn-success">Back to List</a>
+                <input type="submit" class="btn btn-danger" value="Delete" />
+                <a asp-action="Index" class="btn btn-green">Back to List</a>
             </div>
         </div>
         <div class="col-1"></div>

@@ -1,6 +1,7 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
-using ECommSale.Models;
+using EcommSale.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
@@ -13,11 +14,13 @@ namespace EcommSale.Areas.Customer.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _db;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _db = db;
+            _userManager = userManager;
         }
 
         public IActionResult Index(string productName, decimal? minPrice, decimal? maxPrice, int? brand, int? category, int? page)
@@ -71,6 +74,23 @@ namespace EcommSale.Areas.Customer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public ActionResult Details(int? id)
+        {
+            // Kiểm tra sản phẩm có tồn tại
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var product = _db.Product.Include(c => c.Category).Include(c => c.Brand).FirstOrDefault(c => c.ProductID == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
         }
 
         // Found similar products

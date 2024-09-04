@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ECommSale.Models
+namespace EcommSale.Models
 {
     public class Brand
     {
