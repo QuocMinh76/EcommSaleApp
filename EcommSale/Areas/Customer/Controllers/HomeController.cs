@@ -77,7 +77,7 @@ namespace EcommSale.Areas.Customer.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
             // Kiểm tra sản phẩm có tồn tại
             if (id == null)
@@ -91,7 +91,32 @@ namespace EcommSale.Areas.Customer.Controllers
                 return NotFound();
             }
 
-            // Take the comments of this product and put in a ViewBag
+            // Kiểm tra xem tk login có được bình luận k
+            // Get the current user
+            var currentUser = await _userManager.GetUserAsync(User);
+
+
+            if (currentUser != null)
+            {
+                // Check if the user is an admin
+                bool isAdmin = await _userManager.IsInRoleAsync(currentUser, "Admin");
+
+                // If the user is not an admin, check if they have purchased the product
+                if (!isAdmin)
+                {
+                    // Query the database to check if the user has purchased the product
+                    bool hasPurchased = _db.OrderDetails
+                        .Any(od => od.Order.UserID == currentUser.Id && od.ProductID == id);
+
+                    // If the user has not purchased the product, disable the comment submission button
+                    if (!hasPurchased)
+                    {
+                        ViewBag.CanComment = false;
+                    }
+                }
+            } 
+
+            //Lấy comment hiện có của sp
             var comments = _db.Comment
             .Where(c => c.ProductID == id)
             .ToList();
