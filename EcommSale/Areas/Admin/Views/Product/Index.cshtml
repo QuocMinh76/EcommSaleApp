@@ -1,5 +1,5 @@
 ﻿@using EcommSale.Models;
-@model IEnumerable<ECommSale.Models.Product>
+@model IEnumerable<EcommSale.Models.Product>
 @{
     ViewData["Title"] = "Index";
     ViewData["ControllerName"] = ViewContext.RouteData.Values["controller"];
@@ -8,61 +8,106 @@
 <br />
 <div class="row">
     <div class="col-6">
-        <h2 class="text-info">Product List</h2>
+        <h2 class="text-black">Product List</h2>
     </div>
     <div class="col-6 text-end">
-        <a asp-action="Create" class="btn btn-info"><i class="fa-solid fa-plus"></i>&nbsp; New Product</a>
+        <a asp-action="Create" class="btn yellow-shop"><i class="fa-solid fa-plus"></i>&nbsp; New Product</a>
     </div>
 </div>
 <br/>
 <div>
-    <table class="table table-striped border">
-        <tr class="table-info">
-            <th>
-                @Html.DisplayNameFor(c=>c.ProductName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(c => c.ProductColor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(c=>c.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(c =>c.ProductCount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(c => c.CategoryID)
-            </th>
-            <th>
-                @Html.DisplayNameFor(c => c.BrandID)
-            </th>
-            <th>
-                @Html.DisplayNameFor(c => c.IsAvailable)
-            </th>
-            <th></th>
-            <th></th>
-        </tr>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.ProductName</td> 
-                <td>@item.ProductColor</td>
-                <td>@string.Format("{0:N0} VND", item.Price)</td>
-                <td>@item.ProductCount</td>
-                <td>@item.Category.CategoryName</td>
-                <td>@item.Brand.BrandName</td>
-                @if (@item.IsAvailable)
-                {
-                    <td>Còn sản phẩm</td>
-                }
-                else
-                {
-                    <td>Hết sản phẩm</td>
-                }   
-                <td>
-                    <partial name="_ButtonPartial" model="@item.ProductID"/>
-                </td>
+    <table class="table table-striped border" id="myTable">
+        <thead>
+            <tr class="yellow-shop">
+                <th>
+                    @Html.DisplayNameFor(c => c.ProductName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.ProductColor)
+                </th>
+                <th>
+                    In Stock
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.CategoryID)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.BrandID)
+                </th>
+                <th data-dt-order="disable">
+                    @Html.DisplayNameFor(c => c.IsAvailable)
+                </th>
+                <th data-dt-order="disable"></th>
+                <th data-dt-order="disable"></th>
             </tr>
-        }
+        </thead>
+        
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@string.Format("{0:N0} VND", item.Price)</td>
+                    <td>@item.ProductColor</td>
+                    <td>@item.ProductCount</td>
+                    <td>@item.Category.CategoryName</td>
+                    <td>@item.Brand.BrandName</td>
+                    @if (@item.IsAvailable)
+                    {
+                        <td>Available</td>
+                    }
+                    else
+                    {
+                        <td>Unavailable</td>
+                    }   
+                    <td>
+                        <partial name="_ButtonPartial" model="@item.ProductID"/>
+                    </td>
+                </tr>
+            }
+        </tbody>
     </table>
 </div>
+
+@section Scripts {
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            let table = new DataTable('#myTable', {
+                lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+                buttons: [
+                    'csv', 'excel', 'pdf', 'print'
+                ],
+                columnDefs: [
+                    { 'orderable': false, 'targets': 6 }
+                ],
+                layout: {
+                    topStart: 'info',
+                    topEnd: {
+                        search: {
+                            placeholder: 'Search'
+                        }
+                    },
+                    bottomStart: 'buttons',
+                    bottomEnd: 'pageLength',
+                    bottom2: 'paging'
+                }
+            });
+            var msgC = '@TempData["create"]'
+            var msgE = '@TempData["edit"]'
+            var msgD = '@TempData["delete"]'
+            if (msgC) {
+                alertify.success(msgC);
+            }
+            else if (msgE) {
+                alertify.success(msgE);
+            }
+            else if (msgD) {
+                alertify.error(msgD);
+            }
+        })
+    </script>
+}

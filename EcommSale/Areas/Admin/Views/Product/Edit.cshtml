@@ -1,10 +1,10 @@
-﻿@using ECommSale.Models;
+﻿@using EcommSale.Models;
 @model Product
 @{
     ViewData["Title"] = "Edit";
 }
 <br />
-<h2 class="text-info">Edit Product</h2>
+<h2 class="text-black">Edit Product</h2>
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
     <div class="p-4 rounded border row">
         <input type="hidden" asp-for="ProductID" />
@@ -91,8 +91,8 @@
             </div>
 
             <div class="mb-3">
-                <input type="submit" class="btn btn-primary" value="Update" />
-                <a asp-action="Index" class="btn btn-success">Back to list</a>
+                <input type="submit" class="btn btn-green" value="Update" />
+                <a asp-action="Index" class="btn btn-red">Back to list</a>
             </div>
         </div>
         <div class="col-1"></div>

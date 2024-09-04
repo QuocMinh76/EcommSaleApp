@@ -1,4 +1,4 @@
-﻿namespace ECommSale.Models
+﻿namespace EcommSale.Models
 {
     public class SessionUserVm
     {

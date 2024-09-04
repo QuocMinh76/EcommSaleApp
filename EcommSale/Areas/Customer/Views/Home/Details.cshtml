@@ -1,0 +1,178 @@
+﻿@model EcommSale.Models.Product
+@{
+	ViewData["Title"] = "Details";
+}
+@using EcommSale.Data
+@using EcommSale.Utilities
+@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+	
+}
+
+<br />
+
+<h2 class="text-black">@Model.ProductName</h2>
+<form asp-action="Details" method="post" enctype="multipart/form-data">
+	<div class="p-4 rounded border row text-black fw-bold">
+		<div asp-validation-summary="ModelOnly" class="text-danger">
+		</div>
+		<input type="hidden" id="stockQuantity" value="@Model.ProductCount" />
+
+		<div class="col-8">
+			<div class="mb-3 row">
+				<div class="col-4">
+					<label asp-for="ProductName">Product Name</label>
+				</div>
+				<div class="col-8">
+					<input type="hidden" asp-for="ProductID" />
+					<input asp-for="ProductName" readonly="readonly" class="form-control" />
+				</div>
+				<span asp-validation-for="ProductName" class="text-danger"></span>
+			</div>
+			<div class="mb-3 row">
+				<div class="col-4">
+					<label asp-for="Price"></label>
+				</div>
+				<div class="col-8">
+					<input readonly="readonly" class="form-control" value="@string.Format("{0:N0} VND", Model.Price)" />
+				</div>
+				<span asp-validation-for="Price" class="text-danger"></span>
+			</div>
+			<div class="mb-3 row">
+				<div class="col-4">
+					<label asp-for="ProductColor">Color</label>
+				</div>
+				<div class="col-8">
+					<input asp-for="ProductColor" readonly="readonly" class="form-control" />
+				</div>
+			</div>
+			<div class="mb-3 row">
+				<div class="col-4">
+					<label asp-for="CategoryID"></label>
+				</div>
+				<div class="col-8">
+					<select class="form-control" disabled>
+						<option value="@Model.CategoryID">@Model.Category.CategoryName</option>
+					</select>
+				</div>
+				<span asp-validation-for="CategoryID" class="text-danger"></span>
+			</div>
+			<div class="mb-3 row">
+				<div class="col-4">
+					<label asp-for="BrandID">Brand</label>
+				</div>
+				<div class="col-8">
+					<select class="form-control" disabled>
+						<option value="@Model.BrandID">@Model.Brand.BrandName</option>
+					</select>
+				</div>
+				<span asp-validation-for="BrandID" class="text-danger"></span>
+			</div>
+			<div class="mb-3 row">
+				<div class="col-4">
+				</div>
+				<div class="col-8">
+					<div class="input-group">
+						@if (Model.IsAvailable)
+						{
+							<input id="bt_add" type="submit" class="btn yellow-shop form-control fw-bold border" value="Add to Cart" style="margin-right: 5px" />
+							<span class="input-group-btn">
+								<button id="bt_inc_dec" type="button" class="btn yellow-shop form-control border" onclick="decreaseQuantity()">-</button>
+							</span>
+							<input type="number" id="quantity" name="quantity" value="1" min="1" style="width: 45px;" />
+							<span class="input-group-btn">
+								<button id="bt_inc_dec" type="button" class="btn yellow-shop form-control border" onclick="increaseQuantity()">+</button>
+							</span>
+						}
+						else
+						{
+							<input class="btn btn-RedShop form-control" value="Coming soon" disabled />
+						}
+					</div>
+				</div>
+			</div>
+			<div class="mb-3">
+				<a asp-action="Index" class="btn btn-danger">Back to List</a>
+			</div>
+		</div>
+		<div class="col-1"></div>
+		<div class="col-3">
+			<img src="~/@Model.Image" width="100%" class="image_prod" />
+			@if (Model.IsAvailable)
+			{
+				<h5 class="text-success">Available</h5>
+			}
+			else
+			{
+				<h5 class="text-danger">Not available</h5>
+			}
+		</div>
+
+	</div>
+</form>
+
+<!-- Similar product section -->
+<br />
+<h3 class="text-black">Similar products</h3>
+<div id="similar-products-container">
+	<!-- Load danh sách sản phẩm tương tự ở đây bằng AJAX -->
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+	}
+
+	<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+	<script type="text/javascript">
+		$(function () {
+			var msgEM = '@TempData["ErrorMessage"]'
+			var msgSM = '@TempData["SuccessMessage"]'
+			var msgDM = '@TempData["DeleteMessage"]'
+			if (msgEM) {
+				alertify.success(msgEM);
+			}
+			else if (msgSM) {
+				alertify.success(msgSM);
+			}
+			else if (msgDM) {
+				alertify.error(msgDM);
+			}
+		})
+	</script>
+
+	<script>
+		function decreaseQuantity() {
+			var quantity = document.getElementById("quantity");
+			var currentValue = parseInt(quantity.value);
+			if (currentValue > 1) {
+				quantity.value = currentValue - 1;
+			}
+		}
+
+		function increaseQuantity() {
+			var quantity = document.getElementById("quantity");
+			var stockQuantity = parseInt(document.getElementById("stockQuantity").value);
+			var currentValue = parseInt(quantity.value);
+			if (currentValue < stockQuantity && currentValue < 50) {
+				quantity.value = currentValue + 1;
+			}
+		}
+	</script>
+
+	<script>
+		$(document).ready(function () {
+			var productId = @Model.ProductID; // ID của sản phẩm hiện tại
+			var url = '@Url.Action("SimilarProducts", "Home")' + '?productId=' + productId;
+			$.ajax({
+				url: url,
+				type: "GET",
+				success: function (data) {
+					$("#similar-products-container").html(data);
+				}
+			});
+		});
+	</script>
+}

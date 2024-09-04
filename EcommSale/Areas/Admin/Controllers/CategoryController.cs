@@ -1,5 +1,5 @@
 ﻿using EcommSale.Data;
-using ECommSale.Models;
+using EcommSale.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using ECommSale.Models;
+using EcommSale.Models;
 using EcommSale.Data;
 
 namespace EcommSale.Areas.Identity.Pages.Account
