@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Security.Claims;
 using X.PagedList.Extensions;
 
 namespace EcommSale.Areas.Customer.Controllers
@@ -90,6 +91,13 @@ namespace EcommSale.Areas.Customer.Controllers
                 return NotFound();
             }
 
+            // Take the comments of this product and put in a ViewBag
+            var comments = _db.Comment
+            .Where(c => c.ProductID == id)
+            .ToList();
+
+            ViewBag.Comments = comments;
+            ViewBag.CanComment ??= true; // If ViewBag.CanComment is not set, default to true
             return View(product);
         }
 
@@ -153,6 +161,85 @@ namespace EcommSale.Areas.Customer.Controllers
             }
 
             return distance;
+        }
+
+        //comment
+        [HttpPost]
+        public async Task<ActionResult> AddComment(int productId, string content)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            string commenterName;
+            if (!string.IsNullOrEmpty(currentUser.FirstName) && !string.IsNullOrEmpty(currentUser.LastName))
+            {
+                commenterName = $"{currentUser.FirstName} {currentUser.LastName}";
+            }
+            else if (!string.IsNullOrEmpty(currentUser.FirstName))
+            {
+                commenterName = currentUser.FirstName;
+            }
+            else if (!string.IsNullOrEmpty(currentUser.LastName))
+            {
+                commenterName = currentUser.LastName;
+            }
+            else
+            {
+                commenterName = currentUser.UserName;
+            }
+
+            if (string.IsNullOrEmpty(content))
+            {
+                // Handle empty comment content (optional)
+                TempData["ErrorMessage"] = "Comment content cannot be empty.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            var comment = new Comment
+            {
+                CommenterID = currentUser.Id,
+                CommenterName = commenterName,
+                ProductID = productId,
+                Content = content,
+                PostedDate = DateTime.Now
+            };
+
+            // Add the comment to the database
+            _db.Comment.Add(comment);
+            _db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Comment posted!";
+            TempData["CommentPosted"] = true;
+
+            return RedirectToAction("Details", new { id = productId });
+        }
+
+        [HttpPost]
+        public IActionResult DeleteComment(int? commentId)
+        {
+            if (commentId == null)
+            {
+                return NotFound();
+            }
+
+            var comment = _db.Comment.Find(commentId);
+
+            if (comment == null)
+            {
+                return NotFound();
+            }
+
+            // Check if the user is authorized to delete the comment
+            if (!User.IsInRole("Admin") && comment.CommenterID != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+            {
+                return Forbid(); // User is not authorized to delete the comment
+            }
+
+            _db.Comment.Remove(comment);
+            _db.SaveChanges();
+
+            TempData["DeleteMessage"] = "Comment deleted!";
+
+            return RedirectToAction("Details", new { id = comment.ProductID });
         }
     }
 }
