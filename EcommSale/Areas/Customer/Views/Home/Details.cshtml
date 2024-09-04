@@ -75,7 +75,7 @@
 				</div>
 				<div class="col-8">
 					<div class="input-group">
-						@if (Model.IsAvailable)
+						@if (Model.IsAvailable && User.Identity.IsAuthenticated && Model.ProductCount > 0)
 						{
 							<input id="bt_add" type="submit" class="btn yellow-shop form-control fw-bold border" value="Add to Cart" style="margin-right: 5px" />
 							<span class="input-group-btn">
@@ -88,7 +88,14 @@
 						}
 						else
 						{
-							<input class="btn btn-RedShop form-control" value="Coming soon" disabled />
+							<input type="submit" class="btn yellow-shop form-control fw-bold border" value="Add to Cart" style="margin-right: 5px" disabled />
+							<span class="input-group-btn">
+								<button type="button" class="btn yellow-shop form-control border" disabled>-</button>
+							</span>
+							<input type="number" value="1" min="1" style="width: 45px;" disabled />
+							<span class="input-group-btn">
+								<button type="button" class="btn yellow-shop form-control border" disabled>+</button>
+							</span>
 						}
 					</div>
 				</div>
@@ -100,13 +107,17 @@
 		<div class="col-1"></div>
 		<div class="col-3">
 			<img src="~/@Model.Image" width="100%" class="image_prod" />
-			@if (Model.IsAvailable)
+			@if (Model.IsAvailable && Model.ProductCount > 0)
 			{
 				<h5 class="text-success">Available</h5>
 			}
+			else if (Model.IsAvailable && Model.ProductCount <= 0)
+			{
+				<h5 class="text-danger">Out of stock</h5>
+			}
 			else
 			{
-				<h5 class="text-danger">Not available</h5>
+				<h5 class="text-danger">Coming soon</h5>
 			}
 		</div>
 
@@ -122,7 +133,7 @@
 
 <!-- Comment section -->
 <div class="mt-3">
-	<h3 class="text-light">Comment section</h3>
+	<h3 class="text-black">Comment section</h3>
 	<!-- Comment form -->
 	<div class="mt-3">
 		<form asp-action="AddComment" method="post">
@@ -130,10 +141,20 @@
 			<div class="form-group">
 				<textarea class="form-control" id="content" name="content" rows="3" required placeholder="Add a comment..." style="resize: none; overflow-y: hidden;"></textarea>
 			</div>
-			<div class="text-end mb-2 mt-2">
-				<button type="button" class="btn btn-secondary mr-2" id="cancelComment">Cancel</button>
-				<button type="submit" class="btn btn-RedShop" id="submitComment" @(ViewBag.CanComment ? "" : "disabled")>Comment</button>
-			</div>
+			@if(User.Identity.IsAuthenticated)
+			{
+				<div class="text-end mb-2 mt-2">
+					<button type="button" class="btn btn-red mr-2" id="cancelComment">Cancel</button>
+					<button type="submit" class="btn btn-yellow" id="submitComment" @(ViewBag.CanComment ? "" : "disabled")>Comment</button>
+				</div>
+			}
+			else
+			{
+				<div class="text-end mb-2 mt-2">
+					<button type="button" class="btn btn-red mr-2" disabled>Cancel</button>
+					<button type="submit" class="btn btn-yellow" disabled>Comment</button>
+				</div>
+			}
 		</form>
 	</div>
 

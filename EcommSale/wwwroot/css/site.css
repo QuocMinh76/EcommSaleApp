@@ -38,16 +38,16 @@ body {
 
 .login-logout-card a.nav-link {
     font-size: 1rem;
-    color: aliceblue;
-    background-color: dodgerblue;
+    color: black;
+    background-color: rgb(248,255,109);
     text-align: center;
     padding: 1rem;
 }
 
     .login-logout-card a.nav-link.active {
         font-size: 1rem;
-        color: aliceblue;
-        background-color: darkblue;
+        color: black;
+        background-color: rgb(232, 232, 42);
         text-align: center;
         padding: 1rem;
         font-weight: bold;
