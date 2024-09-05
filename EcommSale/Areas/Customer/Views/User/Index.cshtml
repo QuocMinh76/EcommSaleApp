@@ -1,0 +1,109 @@
+﻿@using EcommSale.Models
+@model IEnumerable<ApplicationUser>
+@{
+	ViewData["Title"] = "Index";
+	ViewData["ControllerName"] = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+<br />
+<br />
+<div class="row">
+	<div class="col-6">
+		<h2 class="text-black">User List</h2>
+	</div>
+	<div class="col-6">
+
+	</div>
+</div>
+<br />
+<div>
+	<table class="table table-striped border" id="myTable">
+		<thead>
+			<tr class="yellow-shop text-black">
+				<th>Name</th>
+				<th>Username</th>
+				<th>Status</th>
+				<th data-dt-order="disable"></th>
+			</tr>
+		</thead>
+		
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr class="text-black">
+					<td>@item.FirstName @item.LastName</td>
+					<td>@item.UserName</td>
+					@if (item.LockoutEnd > DateTime.Now && item.LockoutEnd != null)
+					{
+						<td>Inactive</td>
+						<td style="width: 100px" class="text-end">
+							<div class="btn-group">
+								<a asp-action="Active" class="btn btn-green text-black" asp-route-id="@item.Id">
+									<i class="fa-solid fa-unlock"></i>
+								</a>
+								<a asp-action="Delete" class="btn btn-red text-black" asp-route-id="@item.Id">
+									<i class="fa-regular fa-trash-can"></i>
+								</a>
+							</div>
+						</td>
+					}
+					else
+					{
+						<td>Active</td>
+						<td style="width: 100px" class="text-end">
+							<div class="btn-group">
+								<a asp-action="Details" class="btn btn-green text-black" asp-route-id="@item.Id">
+									<i class="fa-solid fa-list"></i>
+								</a>
+								<a asp-action="Lockout" class="btn btn-red text-black" asp-route-id="@item.Id">
+									<i class="fa-solid fa-lock"></i>
+								</a>
+							</div>
+						</td>
+					}
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@section Scripts {
+	<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+	<script type="text/javascript">
+		$(function () {
+			let table = new DataTable('#myTable', {
+				lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+				buttons: [
+					'csv', 'excel', 'pdf', 'print'
+				],
+				columnDefs: [
+					{ 'orderable': false, 'targets': 3 },
+					{ 'searchable': false, 'targets': 2 }
+				],
+				layout: {
+					topStart: 'info',
+					topEnd: {
+						search: {
+							placeholder: 'Search'
+						}
+					},
+					bottomStart: 'buttons',
+					bottomEnd: 'pageLength',
+					bottom2: 'paging'
+				}
+			});
+			var msgL = '@TempData["lockout"]'
+			var msgA = '@TempData["active"]'
+			var msgD = '@TempData["delete"]'
+			if (msgL) {
+				alertify.success(msgL);
+			}
+			else if (msgA) {
+				alertify.success(msgA);
+			}
+			else if (msgD) {
+				alertify.error(msgD);
+			}
+		})
+	</script>
+}

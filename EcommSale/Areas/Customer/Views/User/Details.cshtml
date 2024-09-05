@@ -1,0 +1,51 @@
+﻿@model EcommSale.Models.ApplicationUser
+@{
+	ViewData["Title"] = "Details";
+}
+<br />
+
+<h2 class="text-black">User Details</h2>
+<form asp-action="" method="post">
+	<div class="p-4 rounded border text-black fw-bold">
+		<div asp-validation-summary="ModelOnly" class="text-danger">
+		</div>
+		<input type="hidden" asp-for="Id" value="@Model.Id" />
+		<div class="mb-3 row">
+			<div class="col-2">
+				<label asp-for="UserName"></label>
+			</div>
+			<div class="col-5">
+				<input asp-for="UserName" readonly="readonly" class="form-control" readonly="readonly" />
+			</div>
+			<span asp-validation-for="UserName" class="text-danger"></span>
+		</div>
+		<div class="mb-3 row">
+			<div class="col-2">
+				<label asp-for="FirstName"></label>
+			</div>
+			<div class="col-5">
+				<input asp-for="FirstName" readonly="readonly" class="form-control" readonly="readonly" />
+			</div>
+			<span asp-validation-for="FirstName" class="text-danger"></span>
+		</div>
+		<div class="mb-3 row">
+			<div class="col-2">
+				<label asp-for="LastName"></label>
+			</div>
+			<div class="col-5">
+				<input asp-for="LastName" readonly="readonly" class="form-control" readonly="readonly" />
+			</div>
+			<span asp-validation-for="LastName" class="text-danger"></span>
+		</div>
+		<div class="mb-3">
+			<a asp-action="Index" class="btn btn-red">Back to List</a>
+			@* <input type="submit" class="btn btn-success" value="Back to List" /> *@
+		</div>
+	</div>
+</form>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+	}
+}
