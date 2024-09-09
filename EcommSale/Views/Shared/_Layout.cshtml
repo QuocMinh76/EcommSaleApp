@@ -1,8 +1,16 @@
 ﻿@using EcommSale.Utilities
 @using Microsoft.AspNetCore.Http
+@using System.Net.Http
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     var userRole = HttpContextAccessor.HttpContext.Session.GetString("roleName");
+    int count = 0;
+    List<CartItemVm> cartItems = HttpContextAccessor.HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+    if (cartItems == null)
+    {
+        cartItems = new List<CartItemVm>();
+    }
+    count = cartItems.Sum(item => item.Quantity);
 }
 
 <!DOCTYPE html>
@@ -42,12 +50,21 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="Customer" asp-controller="User" asp-action="Index">User</a>
                         </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="Customer" asp-controller="Home" asp-action="Cart">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                    (@count)
+                                </a>
+                            </li>
+                        }
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                             </li>
-                        }
+                    }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

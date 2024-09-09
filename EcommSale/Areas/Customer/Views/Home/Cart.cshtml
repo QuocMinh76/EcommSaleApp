@@ -1,0 +1,59 @@
+﻿@using EcommSale.Models;
+@model List<CartItemVm>
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<h1>Cart</h1>
+
+<br/>
+<div class="row">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model) 
+            {
+                <tr>
+                    <td>
+                        <img src="/@item.Product.Image" width="200px" height="150px" />
+                    </td>
+                    <td>@item.Product.ProductName</td>
+                    <td>@string.Format("{0:N0} VND", item.Product.Price)</td>
+                    <td>
+                        <input type="number" value="@item.Quantity" disabled/>
+                    </td>
+                    <td>
+                        <a asp-area="Customer" asp-action="Remove" asp-controller="Home" asp-route-id="@item.Product.ProductID" class="btn btn-danger">
+                            <i class="fa-solid fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="row">
+    <div class="col-6">
+        <a asp-action="Index" asp-controller="Home" class="btn btn-success">Back to Home</a>
+    </div>
+    <div class="col-6 text-right">
+        <h3>Total Products: @Model.Sum(c => c.Quantity)</h3>
+        <h3>Total Price: @string.Format("{0:N0} VND", Model.Sum(c => c.Quantity * c.Product.Price))</h3>
+        @if (@Model.Sum(c => c.Quantity) < 1)
+        {
+            <button class="btn btn-info" disabled>Proceed to Checkout</button>
+        }
+        else
+        {
+            <a asp-action="Index" asp-controller="Home" class="btn btn-info">Proceed to Checkout</a>
+        }
+    </div>
+</div>

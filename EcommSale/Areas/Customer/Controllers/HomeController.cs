@@ -1,6 +1,6 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
-using EcommSale.Models;
+using EcommSale.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -77,6 +77,7 @@ namespace EcommSale.Areas.Customer.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        //Get product detail method
         public async Task<ActionResult> Details(int? id)
         {
             // Kiểm tra sản phẩm có tồn tại
@@ -90,11 +91,10 @@ namespace EcommSale.Areas.Customer.Controllers
             {
                 return NotFound();
             }
-
+            
             // Kiểm tra xem tk login có được bình luận k
             // Get the current user
             var currentUser = await _userManager.GetUserAsync(User);
-
 
             if (currentUser != null)
             {
@@ -123,7 +123,102 @@ namespace EcommSale.Areas.Customer.Controllers
 
             ViewBag.Comments = comments;
             ViewBag.CanComment ??= true; // If ViewBag.CanComment is not set, default to true
+            
             return View(product);
+        }
+
+		//Post product detail method
+		[HttpPost]
+		[ActionName("Details")]
+        public ActionResult ProductDetail(int? id, int quantity)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+			var product = _db.Product.Include(c => c.Category).Include(c => c.Brand).FirstOrDefault(c => c.ProductID == id);
+			if (product == null)
+			{
+				return NotFound();
+			}
+            var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+            if (cartItems == null) 
+            {
+                cartItems = new List<CartItemVm>();
+            }
+            var existingCartItem = cartItems.FirstOrDefault(c=>c.Product.ProductID == id);
+			if (existingCartItem != null)
+			{
+				// If the product is already in the cart, just increase its quantity
+				existingCartItem.Quantity += quantity;
+			}
+			else
+			{
+				// If the product is not in the cart, add it as a new cart item
+				cartItems.Add(new CartItemVm
+				{
+					Product = product,
+					Quantity = quantity
+				});
+			}
+
+			TempData["add"] = "Added to cart";
+
+			HttpContext.Session.Set("cartItems", cartItems);
+			return RedirectToAction(nameof(Index));
+		}
+
+		[HttpPost]
+        public IActionResult Remove(int ?id)
+        {
+			var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+			if (cartItems != null)
+			{
+				var cartItem = cartItems.FirstOrDefault(c => c.Product.ProductID == id);
+				if (cartItem != null)
+				{
+					cartItems.Remove(cartItem);
+					HttpContext.Session.Set("cartItems", cartItems);
+				}
+			}
+			return RedirectToAction(nameof(Index));
+		}
+
+        //Get remove action method
+        [ActionName("Remove")]
+        public IActionResult RemoveFromCart(int? id)
+        {
+            List<CartItemVm> cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+            if (cartItems != null) 
+            {
+                var cartItem = cartItems.FirstOrDefault(item => item.Product.ProductID == id);
+                if (cartItem != null) 
+                {
+                    cartItem.Quantity--;
+                    if (cartItem.Quantity <= 0) 
+                    {
+                        cartItems.Remove(cartItem);
+                    }
+                    HttpContext.Session.Set("cartItems", cartItems);
+                    if (cartItems.Count == 0)
+                    {
+                        return RedirectToAction(nameof(Index), "Home");
+                    }
+                }
+            }
+            return RedirectToAction(nameof(Cart));
+        }
+
+        //Get product cart action method
+        public IActionResult Cart()
+        {
+			var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+			if (cartItems == null)
+			{
+				cartItems = new List<CartItemVm>();
+			}
+			return View(cartItems); 
+
         }
 
         // Found similar products
