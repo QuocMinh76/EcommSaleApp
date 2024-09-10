@@ -1,0 +1,37 @@
+﻿@using EcommSale.Models;
+@model IEnumerable<Order>
+@{
+	ViewData["Title"] = "Index";
+}
+
+<br />
+<br />
+<div class="row">
+	<div class="col-6">
+		<h2 class="text-black">Order List</h2>
+	</div>
+</div>
+<br />
+<div>
+	<table class="table table-striped border">
+		<tr class="yellow-shop text-black">
+			<th>Order Date</th>
+			<th>Customer Username</th>
+			<th></th>
+		</tr>
+		@foreach (var item in Model)
+		{
+			<tr class="text-black" style="opacity: 90%;">
+				<td>@item.OrderDate</td>
+				<td>@item.User.UserName</td>
+				<td style="width: 50px">
+					<div class="btn-group">
+						<a asp-action="Details" class="btn btn-green" asp-route-id="@item.OrderID">
+							<i class="fa-solid fa-list"></i>
+						</a>
+					</div>
+				</td>
+			</tr>
+		}
+	</table>
+</div>

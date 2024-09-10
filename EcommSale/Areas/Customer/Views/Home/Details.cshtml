@@ -17,6 +17,10 @@
 }
 
 <br />
+@if (!string.IsNullOrEmpty(ViewBag.ErrorStock))
+{
+	<div class="alert alert-danger">@ViewBag.ErrorStock</div>
+}
 
 <h2 class="text-black">@Model.ProductName</h2>
 <form asp-action="Details" method="post" enctype="multipart/form-data">
@@ -184,20 +188,20 @@
 			<div class="card mb-2 comment">
 				<div class="card-body d-flex justify-content-between align-items-start">
 					<div>
-						<h5 class="card-title">@comment.commentername</h5>
-						<p class="card-text">@comment.content</p>
-						<small class="text-muted">@comment.posteddate.tostring("dd/mm/yyyy hh:mm tt")</small>
+						<h5 class="card-title">@comment.CommenterName</h5>
+						<p class="card-text">@comment.Content</p>
+						<small class="text-muted">@comment.PostedDate.ToString("dd/MM/yyyy hh:mm tt")</small>
 					</div>
 					<div class="dropstart">
-						<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownmenubutton-@comment.commentid" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton-@comment.CommentID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 							<i class="fa-solid fa-ellipsis-vertical"></i>
 						</button>
-						@if (User.IsInRole("admin") || comment.commenterid == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+						@if (User.IsInRole("Admin") || comment.CommenterID == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
 						{
-							<ul class="dropdown-menu" aria-labelledby="dropdownmenubutton-@comment.commentid">
+							<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@comment.CommentID">
 								<li>
-									<form asp-action="deletecomment" asp-route-commentid="@comment.commentid" method="post">
-										<button type="submit" class="dropdown-item">delete comment</button>
+									<form asp-action="deletecomment" asp-route-commentID="@comment.CommentID" method="post">
+										<button type="submit" class="dropdown-item">Delete comment</button>
 									</form>
 								</li>
 							</ul>

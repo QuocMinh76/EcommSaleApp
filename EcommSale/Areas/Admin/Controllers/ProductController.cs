@@ -26,33 +26,6 @@ namespace EcommSale.Areas.Admin.Controllers
             return View(_db.Product.Include(c=>c.Category).Include(b=>b.Brand).ToList());
         }
         
-        //Post Index action method
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Index(decimal? lowAmount, decimal? highAmount, string? productName)
-        {
-            var query = _db.Product.Include(c => c.Category).Include(b => b.Brand).AsQueryable();
-
-            if (productName != null)
-            {
-                productName = productName.Trim();
-                query = query.Where(p => p.ProductName.ToLower().Contains(productName.ToLower()));
-            }
-
-            if (lowAmount != null)
-            {
-                query = query.Where(p => p.Price >= lowAmount);
-            }
-
-            if (highAmount != null)
-            {
-                query = query.Where(p => p.Price <= highAmount);
-            }
-            var products = query.ToList();
-
-            return View(products);
-        }
-        
         //Create get action method
         public ActionResult Create()
         {
