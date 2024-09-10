@@ -1,6 +1,7 @@
-﻿@model EcommSale.Models.Order
+﻿@page "{id:int}"
+@model EcommSale.Areas.Identity.Pages.Account.Manage.DetailsModel
 @{
-    ViewData["Title"] = "Details";
+	ViewData["Title"] = "Order Details";
 }
 
 <h1 class="text-black">Order Details</h1>
@@ -10,13 +11,13 @@
     <hr class="text-black" style="height: 5px" />
     <dl class="row text-black">
         <dt class="col-sm-2">Order ID</dt>
-        <dd class="col-sm-10">@Model.OrderID</dd>
+        <dd class="col-sm-10">@Model.Order.OrderID</dd>
 
         <dt class="col-sm-2">Order Date</dt>
-        <dd class="col-sm-10">@Model.OrderDate.ToString("dd/MM/yyyy hh:mm tt")</dd>
+        <dd class="col-sm-10">@Model.Order.OrderDate.ToString("dd/MM/yyyy hh:mm tt")</dd>
 
         <dt class="col-sm-2">Customer Username</dt>
-        <dd class="col-sm-10">@Model.User.UserName</dd>
+        <dd class="col-sm-10">@Model.Order.User.UserName</dd>
     </dl>
 </div>
 
@@ -33,7 +34,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in ViewBag.OrderDetails)
+            @foreach (var item in Model.OrderDetails)
             {
                 <tr>
                     <td>@item.Product.ProductName</td>
@@ -52,7 +53,7 @@
         decimal totalPrice = 0;
     }
 
-    @foreach (var item in ViewBag.OrderDetails)
+    @foreach (var item in Model.OrderDetails)
     {
         totalAmount += item.Quantity;
         totalPrice += (item.Quantity * item.UnitPrice);
@@ -67,5 +68,5 @@
 </div>
 
 <div>
-    <a asp-action="Index" class="btn btn-red">Back to List</a>
+    <a asp-page="./Orders" class="btn btn-red">Back to List</a>
 </div>

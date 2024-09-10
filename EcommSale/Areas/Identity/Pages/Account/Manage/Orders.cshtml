@@ -1,0 +1,38 @@
+﻿@page
+@model EcommSale.Areas.Identity.Pages.Account.Manage.OrdersModel
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model.Orders.Count == 0)
+{
+    <p>You have not placed any orders yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Order Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td style="width: 50px">
+                        <div class="btn-group">
+                            <a asp-page="./Details" asp-route-id="@order.OrderID" class="btn btn-green">
+                                <i class="fa-solid fa-list"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
