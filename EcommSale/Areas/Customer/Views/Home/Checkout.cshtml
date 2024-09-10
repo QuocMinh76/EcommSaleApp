@@ -1,0 +1,117 @@
+﻿@using EcommSale.Utilities
+@model EcommSale.Models.CheckoutVm
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+	ViewData["Title"] = "Checkout";
+	List<CartItemVm> cartItems = HttpContextAccessor.HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+	if (cartItems == null)
+	{
+		cartItems = new List<CartItemVm>();
+	}
+}
+
+<br />
+
+<h2 class="text-black">Checkout</h2>
+<form asp-action="Checkout" method="post" enctype="multipart/form-data">
+	<div class="p-4 rounded border row text-black fw-bold">
+		<div asp-validation-summary="ModelOnly" class="text-danger">
+		</div>
+		<input type="hidden" asp-for="Order.UserID" />
+		<div class="mb-3 row">
+			<div class="col-6">
+				<div class="col-4">
+					<label asp-for="Order.OrderDate">Order date:</label>
+				</div>
+				<div class="col-8">
+					<input type="hidden" asp-for="Order.OrderDate" />
+					<input readonly="readonly" class="form-control" value="@Model.Order.OrderDate.ToString("dd/MM/yyyy hh:mm tt")" />
+				</div>
+				<span asp-validation-for="Order.OrderDate" class="text-danger"></span>
+			</div>
+			<div class="col-6">
+				<div class="col-4">
+					<label asp-for="Order.User.UserName">Customer name:</label>
+				</div>
+				<div class="col-8">
+					@{
+						var user = Model.Order.User;
+						var customerName = user.FirstName != null && user.LastName != null
+						? $"{user.FirstName} {user.LastName}"
+						: user.FirstName != null
+						? user.FirstName
+						: user.LastName != null
+						? user.LastName
+						: user.UserName;
+					}
+					<input readonly="readonly" class="form-control" value="@customerName" />
+				</div>
+				<span asp-validation-for="Order.User.UserName" class="text-danger"></span>
+			</div>
+		</div>
+		<div class="mb-3 row">
+			<table class="table table-bordered text-black fw-bold">
+				<thead>
+					<tr>
+						<th>Image</th>
+						<th>Name</th>
+						<th>Price</th>
+						<th>Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model.CartItems)
+					{
+						<tr>
+							<td>
+								<img src="~/@item.Product.Image" width="100px" height="100px" />
+							</td>
+							<td>
+								@item.Product.ProductName
+							</td>
+							<td>
+								@string.Format("{0:N0} VND", item.Product.Price)
+							</td>
+							<td>
+								@item.Quantity
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="mb-3 row">
+			<div class="col-6">
+				<h4>Total Products: @Model.CartItems.Sum(c => c.Quantity)</h4>
+			</div>
+			<div class="col-6 text-end">
+				<h4>Total Price: @string.Format("{0:N0} VND", Model.CartItems.Sum(c => c.Quantity * c.Product.Price))</h4>
+			</div>
+		</div>
+		<div class="mb-3 row">
+			<div class="col-4">
+				@if (User.IsInRole("Admin"))
+				{
+					<input type="submit" id="bt_general" class="btn btn-green w-100" value="Checkout" disabled />
+				}
+				else
+				{
+					<input type="submit" id="bt_general" class="btn btn-green w-100" value="Checkout" />
+				}
+			</div>
+			<div class="col-4">
+				<a class="btn btn-blue w-100">PayPal</a>
+			</div>
+			<div class="col-4">
+				<a id="bt_general" asp-action="Cart" class="btn btn-red w-100">Back to Cart</a>
+			</div>
+		</div>
+
+	</div>
+</form>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+	}
+}

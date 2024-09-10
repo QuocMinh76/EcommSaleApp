@@ -12,9 +12,6 @@ namespace EcommSale.Models
         [Display(Name = "Order Date")]
         public DateTime OrderDate { get; set; }
 
-        [Display(Name = "Is Confirmed")]
-        public bool IsConfirmed { get; set; } = false;
-
         [Display(Name = "User ID")]
         [ForeignKey("Id")]
         public string UserID { get; set; }

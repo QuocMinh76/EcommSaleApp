@@ -114,10 +114,15 @@ namespace EcommSale.Areas.Customer.Controllers
                         ViewBag.CanComment = false;
                     }
                 }
-            } 
+            }
+			if (TempData.ContainsKey("errorStock"))
+			{
+				// Pass the delete error message to the view using ViewBag
+				ViewBag.ErrorStock = TempData["errorStock"];
+			}
 
-            //Lấy comment hiện có của sp
-            var comments = _db.Comment
+			//Lấy comment hiện có của sp
+			var comments = _db.Comment
             .Where(c => c.ProductID == id)
             .ToList();
 
@@ -132,6 +137,7 @@ namespace EcommSale.Areas.Customer.Controllers
 		[ActionName("Details")]
         public ActionResult ProductDetail(int? id, int quantity)
         {
+            //Add product to cart
             if (id == null)
             {
                 return NotFound();
@@ -141,6 +147,14 @@ namespace EcommSale.Areas.Customer.Controllers
 			{
 				return NotFound();
 			}
+
+            // Check if the requested quantity is available
+            if (product.ProductCount < quantity)
+            {
+                TempData["errorStock"] = "Not enough stock available.";
+                return RedirectToAction(nameof(Details), new { id = product.ProductID });
+            }
+
             var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
             if (cartItems == null) 
             {
@@ -162,40 +176,36 @@ namespace EcommSale.Areas.Customer.Controllers
 				});
 			}
 
-			TempData["add"] = "Added to cart";
+            product.ProductCount -= quantity;
+            _db.SaveChanges(); // Save changes to the database
+
+            TempData["add"] = "Added to cart";
 
 			HttpContext.Session.Set("cartItems", cartItems);
 			return RedirectToAction(nameof(Index));
 		}
 
-		[HttpPost]
-        public IActionResult Remove(int ?id)
-        {
-			var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
-			if (cartItems != null)
-			{
-				var cartItem = cartItems.FirstOrDefault(c => c.Product.ProductID == id);
-				if (cartItem != null)
-				{
-					cartItems.Remove(cartItem);
-					HttpContext.Session.Set("cartItems", cartItems);
-				}
-			}
-			return RedirectToAction(nameof(Index));
-		}
-
         //Get remove action method
         [ActionName("Remove")]
-        public IActionResult RemoveFromCart(int? id)
+        public IActionResult RemoveOne(int? id)
         {
             List<CartItemVm> cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
-            if (cartItems != null) 
+            if (cartItems != null)
             {
                 var cartItem = cartItems.FirstOrDefault(item => item.Product.ProductID == id);
-                if (cartItem != null) 
+                if (cartItem != null)
                 {
+                    // Retrieve the product from the database to update stock
+                    var product = _db.Product.FirstOrDefault(c => c.ProductID == id);
+                    if (product != null)
+                    {
+                        product.ProductCount += 1; // Increment the stock by 1
+                        _db.SaveChanges();  // Save the changes to the database
+                    }
+
+                    // Remove item from cart
                     cartItem.Quantity--;
-                    if (cartItem.Quantity <= 0) 
+                    if (cartItem.Quantity <= 0)
                     {
                         cartItems.Remove(cartItem);
                     }
@@ -209,10 +219,45 @@ namespace EcommSale.Areas.Customer.Controllers
             return RedirectToAction(nameof(Cart));
         }
 
-        //Get product cart action method
-        public IActionResult Cart()
+        public IActionResult RemoveAll(int ?id)
         {
 			var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+			if (cartItems != null)
+			{
+				var cartItem = cartItems.FirstOrDefault(c => c.Product.ProductID == id);
+				if (cartItem != null)
+				{
+                    // Retrieve the product from the database to update stock
+                    var product = _db.Product.FirstOrDefault(c => c.ProductID == id);
+                    if (product != null)
+                    {
+                        // Increment stock by the total quantity being removed from the cart
+                        product.ProductCount += cartItem.Quantity;
+                        _db.SaveChanges();  // Save changes to the database
+                    }
+
+
+                    //Remove item fomr cart
+                    cartItems.Remove(cartItem);
+					HttpContext.Session.Set("cartItems", cartItems);
+				}
+			}
+			return RedirectToAction(nameof(Index));
+		}
+
+
+        //Get product cart action method
+        public async Task<IActionResult> Cart()
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            // Ensure the current user is authenticated
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account"); // Redirect to login if user is not authenticated
+            }
+
+            var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
 			if (cartItems == null)
 			{
 				cartItems = new List<CartItemVm>();
@@ -361,5 +406,86 @@ namespace EcommSale.Areas.Customer.Controllers
 
             return RedirectToAction("Details", new { id = comment.ProductID });
         }
-    }
+
+		// Get Checkout action method
+
+		public async Task<IActionResult> Checkout()
+		{
+			var currentUser = await _userManager.GetUserAsync(User);
+
+			// Ensure the current user is authenticated
+			if (currentUser == null)
+			{
+				return RedirectToAction("Login", "Account"); // Redirect to login if user is not authenticated
+			}
+
+			var order = new Order
+			{
+				OrderDate = DateTime.Now,
+				UserID = currentUser.Id,
+				User = currentUser
+			}; // Populate order details as needed
+			var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+
+			var viewModel = new CheckoutVm
+			{
+				Order = order,
+				CartItems = cartItems
+			};
+
+			// Pass the cart items to the view
+			return View(viewModel);
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Checkout(CheckoutVm checkoutVm)
+		{
+			ModelState.Clear();
+			if (ModelState.IsValid)
+			{
+				var currentUser = await _userManager.GetUserAsync(User);
+
+				// Ensure the current user is authenticated
+				if (currentUser == null)
+				{
+					return RedirectToAction("Login", "Account"); // Redirect to login if user is not authenticated
+				}
+
+				checkoutVm.Order.User = currentUser;
+
+				// Save order details
+				var order = checkoutVm.Order;
+				_db.Order.Add(order);
+				_db.SaveChanges();
+
+				// Save order items (items in cart)
+				var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+				if (cartItems != null)
+				{
+					foreach (var cartItem in cartItems)
+					{
+						var orderDetail = new OrderDetails
+						{
+							OrderID = order.OrderID,
+							ProductID = cartItem.Product.ProductID,
+							Quantity = cartItem.Quantity,
+							UnitPrice = cartItem.Product.Price
+						};
+						_db.OrderDetails.Add(orderDetail);
+					}
+					_db.SaveChanges();
+				}
+
+				TempData["check"] = "Payment success!";
+
+				// Clear cart in session
+				HttpContext.Session.Set("cartItems", new List<CartItemVm>());
+
+				// Redirect to a success page or action
+				return RedirectToAction(nameof(Index));
+			}
+
+			return View(nameof(Cart));
+		}
+	}
 }

@@ -1,0 +1,74 @@
+﻿@model EcommSale.Models.Order
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1 class="text-black">Order Details</h1>
+
+<div>
+    <h4 class="text-black">Order Information</h4>
+    <hr class="text-black" style="height: 5px" />
+    <dl class="row text-black">
+        <dt class="col-sm-2">Order ID</dt>
+        <dd class="col-sm-10">@Model.OrderID</dd>
+
+        <dt class="col-sm-2">Order Date</dt>
+        <dd class="col-sm-10">@Model.OrderDate.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
+        <dt class="col-sm-2">Customer Username</dt>
+        <dd class="col-sm-10">@Model.User.UserName</dd>
+        <!-- Add more details of the order here -->
+    </dl>
+</div>
+
+<div>
+    <h4 class="text-black">Order Items</h4>
+    <hr class="text-black" style="height: 5px" />
+    <table class="table bg-light">
+        <thead>
+            <tr class="yellow-shop text-black">
+                <th>Product Name</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <!-- Add more table headers as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.OrderDetails)
+            {
+                <tr>
+                    <td>@item.Product.ProductName</td>
+                    <td>@string.Format("{0:N0} VND", item.UnitPrice)</td>
+                    <td>@item.Quantity</td>
+                    <td>@string.Format("{0:N0} VND", item.Quantity * item.UnitPrice)</td>
+                    <!-- Add more table cells for other order details -->
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @{
+        decimal totalAmount = 0;
+        decimal totalPrice = 0;
+    }
+
+    @foreach (var item in ViewBag.OrderDetails)
+    {
+        totalAmount += item.Quantity;
+        totalPrice += (item.Quantity * item.UnitPrice);
+    }
+    <br />
+
+    <hr class="text-black" style="height: 5px" />
+    <dl class="row text-black">
+        <h4>Total Amount of Products: @totalAmount</h4>
+        <h4>Total Price: @string.Format("{0:N0} VND", @totalPrice)</h4>
+    </dl>
+</div>
+
+<div>
+    <a asp-action="Index" class="btn btn-red">Back to List</a>
+</div>

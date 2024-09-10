@@ -31,7 +31,10 @@
                         <input type="number" value="@item.Quantity" disabled/>
                     </td>
                     <td>
-                        <a asp-area="Customer" asp-action="Remove" asp-controller="Home" asp-route-id="@item.Product.ProductID" class="btn btn-danger">
+                        <a asp-area="Customer" asp-action="Remove" asp-controller="Home" asp-route-id="@item.Product.ProductID" class="btn btn-red">
+                            <i class="fa-solid fa-minus"></i>
+                        </a>
+                        <a asp-area="Customer" asp-action="RemoveAll" asp-controller="Home" asp-route-id="@item.Product.ProductID" class="btn btn-red">
                             <i class="fa-solid fa-trash"></i>
                         </a>
                     </td>
@@ -42,18 +45,18 @@
 </div>
 <div class="row">
     <div class="col-6">
-        <a asp-action="Index" asp-controller="Home" class="btn btn-success">Back to Home</a>
+        <a asp-action="Index" asp-controller="Home" class="btn btn-red">Back to Home</a>
     </div>
     <div class="col-6 text-right">
         <h3>Total Products: @Model.Sum(c => c.Quantity)</h3>
         <h3>Total Price: @string.Format("{0:N0} VND", Model.Sum(c => c.Quantity * c.Product.Price))</h3>
         @if (@Model.Sum(c => c.Quantity) < 1)
         {
-            <button class="btn btn-info" disabled>Proceed to Checkout</button>
+            <button class="btn btn-green" disabled>Proceed to Checkout</button>
         }
         else
         {
-            <a asp-action="Index" asp-controller="Home" class="btn btn-info">Proceed to Checkout</a>
+            <a asp-action="Checkout" asp-controller="Home" class="btn btn-green">Proceed to Checkout</a>
         }
     </div>
 </div>
