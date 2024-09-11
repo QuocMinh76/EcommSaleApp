@@ -16,6 +16,7 @@ else
         <thead>
             <tr>
                 <th>Order Date</th>
+                <th>Payment Method</th>
                 <th></th>
             </tr>
         </thead>
@@ -24,6 +25,7 @@ else
             {
                 <tr>
                     <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                    <td>@order.PaymentType</td>
                     <td style="width: 50px">
                         <div class="btn-group">
                             <a asp-page="./Details" asp-route-id="@order.OrderID" class="btn btn-green">
