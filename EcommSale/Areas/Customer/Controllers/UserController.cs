@@ -1,5 +1,6 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EcommSale.Areas.Customer.Controllers
 {
 	[Area("Customer")]
-	public class UserController : Controller
+    [Authorize(Roles = "Admin")]
+    public class UserController : Controller
 	{
 		UserManager<ApplicationUser> _userManager;
 		ApplicationDbContext _db;

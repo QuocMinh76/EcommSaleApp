@@ -1,6 +1,7 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
 using EcommSale.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using X.PagedList.Extensions;
 
 namespace EcommSale.Areas.Customer.Controllers
 {
+    [Authorize]
     [Area("Customer")]
     public class HomeController : Controller
     {
@@ -40,6 +42,7 @@ namespace EcommSale.Areas.Customer.Controllers
             PaypalUrl = configuration["PaypalSettings:Url"]!;
         }
 
+        [AllowAnonymous]
         public IActionResult Index(string productName, decimal? minPrice, decimal? maxPrice, int? brand, int? category, int? page)
         {
             //Load query sản phẩm

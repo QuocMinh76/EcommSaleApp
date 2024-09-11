@@ -1,10 +1,13 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommSale.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class BrandController : Controller
     {
         private ApplicationDbContext db;
@@ -31,6 +34,13 @@ namespace EcommSale.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                var searchBrand = db.Brand.FirstOrDefault(c => c.BrandName == brand.BrandName);
+                if (searchBrand != null) // Neu san pham da ton tai thi thong bao ra va lam moi combobox
+                {
+                    ViewBag.ExistErrorBrand = "This brand already exists";
+                    return View(brand);
+                }
+
                 db.Brand.Add(brand);
                 await db.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -60,6 +70,13 @@ namespace EcommSale.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                var searchBrand = db.Brand.AsNoTracking().FirstOrDefault(c => c.BrandName == brand.BrandName);
+                if (searchBrand != null && searchBrand.BrandID != brand.BrandID) // Neu san pham da ton tai thi thong bao ra va lam moi combobox
+                {
+                    ViewBag.ExistErrorBrand = "This brand already exists";
+                    return View(brand);
+                }
+
                 db.Update(brand);
                 await db.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -79,6 +96,13 @@ namespace EcommSale.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+
+            if (TempData.ContainsKey("deleteError"))
+            {
+                // Pass the delete error message to the view using ViewBag
+                ViewBag.DeleteError = TempData["deleteError"];
+            }
+
             return View(brand);
         }
 
@@ -100,6 +124,15 @@ namespace EcommSale.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+
+            var productsInBrand = await db.Product.AnyAsync(p => p.BrandID == id);
+            if (productsInBrand)
+            {
+                // If there are products in this category, display a message
+                TempData["deleteError"] = "Cannot delete brand. There are products associated with this brand.";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+
             if (ModelState.IsValid)
             {
                 db.Remove(br);

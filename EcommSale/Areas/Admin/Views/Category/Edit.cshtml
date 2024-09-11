@@ -5,6 +5,12 @@
 }
 <br />
 <h2 class="text-black">Edit Category</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.ExistErrorCate))
+{
+    <div class="alert alert-danger">@ViewBag.ExistErrorCate</div>
+}
+
 <form asp-action="Edit" method="post">
     <div class="p-4 rounded border">
         <input type="hidden" asp-for="CategoryID"/>

@@ -5,6 +5,12 @@
 }
 <br/>
 <h2 class="text-black">Create Category</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.ExistErrorCate))
+{
+    <div class="alert alert-danger">@ViewBag.ExistErrorCate</div>
+}
+
 <form asp-action="Create" method="post">
     <div class="p-4 rounded border">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
