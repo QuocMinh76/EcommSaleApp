@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json.Nodes;
 using X.PagedList.Extensions;
 
 namespace EcommSale.Areas.Customer.Controllers
@@ -16,12 +18,26 @@ namespace EcommSale.Areas.Customer.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly CurrencyService _currencyService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+        private string PaypalClientId { get; set; } = "";
+        private string PaypalSecret { get; set; } = "";
+        private string PaypalUrl { get; set; } = "";
+
+        public HomeController(ILogger<HomeController> logger,
+            ApplicationDbContext db,
+            UserManager<ApplicationUser> userManager,
+            CurrencyService currencyService,
+            IConfiguration configuration)
         {
             _logger = logger;
             _db = db;
             _userManager = userManager;
+            _currencyService = currencyService;
+
+            PaypalClientId = configuration["PaypalSettings:ClientId"]!;
+            PaypalSecret = configuration["PaypalSettings:Secret"]!;
+            PaypalUrl = configuration["PaypalSettings:Url"]!;
         }
 
         public IActionResult Index(string productName, decimal? minPrice, decimal? maxPrice, int? brand, int? category, int? page)
@@ -128,8 +144,8 @@ namespace EcommSale.Areas.Customer.Controllers
 
             ViewBag.Comments = comments;
             ViewBag.CanComment ??= true; // If ViewBag.CanComment is not set, default to true
-            
-            return View(product);
+
+			return View(product);
         }
 
 		//Post product detail method
@@ -424,14 +440,28 @@ namespace EcommSale.Areas.Customer.Controllers
 				OrderDate = DateTime.Now,
 				UserID = currentUser.Id,
 				User = currentUser
-			}; // Populate order details as needed
+			};
 			var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+            if (cartItems == null || !cartItems.Any())
+            {
+                return RedirectToAction("Index", "Home");
+
+			}
 
 			var viewModel = new CheckoutVm
 			{
 				Order = order,
 				CartItems = cartItems
 			};
+
+			decimal totalPrice = cartItems.Sum(c => c.Product.Price * c.Quantity);
+
+			decimal rate = await _currencyService.GetExchangeRateFromAPIAsync("VND", "USD");
+            float USDTotal = (float)(totalPrice * rate);
+            ViewBag.USDTotal = USDTotal;
+
+			// Viewbag ClientID
+			ViewBag.PaypalClientId = PaypalClientId;
 
 			// Pass the cart items to the view
 			return View(viewModel);
@@ -455,6 +485,7 @@ namespace EcommSale.Areas.Customer.Controllers
 
 				// Save order details
 				var order = checkoutVm.Order;
+                order.PaymentType = "Cash";
 				_db.Order.Add(order);
 				_db.SaveChanges();
 
@@ -487,5 +518,206 @@ namespace EcommSale.Areas.Customer.Controllers
 
 			return View(nameof(Cart));
 		}
+
+        //PayPal stuffs
+        private async Task<string> GetPaypalAccessToken()
+        {
+            string accessToken = "";
+
+            string url = PaypalUrl + "v1/oauth2/token";
+
+            using (var client = new HttpClient())
+            {
+                string credential64 =
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes(PaypalClientId + ":" + PaypalSecret));
+
+                client.DefaultRequestHeaders.Add("Authorization", "Basic " + credential64);
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+                requestMessage.Content = new StringContent("grant_type=client_credentials", null
+                    , "application/x-www-form-urlencoded");
+
+                var httpRespond = await client.SendAsync(requestMessage);
+
+				var responseContent = await httpRespond.Content.ReadAsStringAsync();
+				Console.WriteLine($"Response: {httpRespond.StatusCode}, {responseContent}");
+
+				if (httpRespond.IsSuccessStatusCode)
+                {
+                    var strResponse = await httpRespond.Content.ReadAsStringAsync();
+
+                    var jsonResponse = JsonNode.Parse(strResponse);
+                    if (jsonResponse != null)
+                    {
+                        accessToken = jsonResponse["access_token"]?.ToString() ?? "";
+                    }
+                }
+            }
+
+            return accessToken;
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateOrder([FromBody] JsonObject data)
+        {
+            var totalAmount = data?["amount"]?.ToString();
+            if (totalAmount == null)
+            {
+                return new JsonResult(new { Id = "" });
+            }
+
+            //create the request body
+            JsonObject createOrderRequest = new JsonObject();
+            createOrderRequest.Add("intent", "CAPTURE");
+
+            JsonObject amount = new JsonObject();
+            amount.Add("currency_code", "USD");
+            amount.Add("value", totalAmount);
+
+            JsonObject purchaseUnits1 = new JsonObject();
+            purchaseUnits1.Add("amount", amount);
+
+            JsonArray purchaseUnits = new JsonArray();
+            purchaseUnits.Add(purchaseUnits1);
+
+            createOrderRequest.Add("purchase_units", purchaseUnits);
+
+            //The code below do the same thing as the one above, as in this will also create the body
+            //The different is just that the below looks cleaner, but it's also harder to add in more fields or logic
+            
+            //JsonObject createOrderRequest = new JsonObject
+            //{
+            //    ["intent"] = "CAPTURE",
+            //    ["purchase_units"] = new JsonArray
+            //          {
+            //           new JsonObject
+            //           {
+            //            ["amount"] = new JsonObject
+            //            {
+            //                ["currency_code"] = "USD",
+            //                ["value"] = totalAmount
+            //                     }
+            //           }
+            //          }
+            //};
+
+            //get access token
+            string accessToken = await GetPaypalAccessToken();
+
+            //send request
+            string url = PaypalUrl + "v2/checkout/orders";
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+                requestMessage.Content = new StringContent(createOrderRequest.ToString(), null, "application/json");
+
+                var httpResponse = await client.SendAsync(requestMessage);
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var strResponse = await httpResponse.Content.ReadAsStringAsync();
+                    var jsonResponse = JsonNode.Parse(strResponse);
+
+                    if (jsonResponse != null)
+                    {
+                        string paypalOrderID = jsonResponse["id"]?.ToString() ?? "";
+
+                        return new JsonResult(new { Id = paypalOrderID });
+                    }
+                }
+            }
+
+			return new JsonResult(new { Id = "" });
+		}
+
+        public async Task<JsonResult> CompleteOrder([FromBody] JsonObject data)
+        {
+            var orderId = data?["orderID"]?.ToString();
+            if (orderId == null)
+            {
+                return new JsonResult("error");
+            }
+
+            //get access token
+            string accessToken = await GetPaypalAccessToken();
+
+            string url = PaypalUrl + "v2/checkout/orders/" + orderId + "/capture";
+
+			using (var client = new HttpClient())
+			{
+				client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+
+				var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+				requestMessage.Content = new StringContent("", null, "application/json");
+
+				var httpResponse = await client.SendAsync(requestMessage);
+
+				if (httpResponse.IsSuccessStatusCode)
+				{
+					var strResponse = await httpResponse.Content.ReadAsStringAsync();
+					var jsonResponse = JsonNode.Parse(strResponse);
+
+					if (jsonResponse != null)
+					{
+						string paypalOrderStatus = jsonResponse["status"]?.ToString() ?? "";
+                        if (paypalOrderStatus == "COMPLETED")
+                        {
+							// Retrieve the current authenticated user
+							var currentUser = await _userManager.GetUserAsync(User);
+
+							// Ensure the current user is authenticated
+							if (currentUser == null)
+							{
+								return new JsonResult("error");
+							}
+
+                            var order = new Order
+                            {
+                                User = currentUser,
+                                PaymentType = "PayPal",
+                                OrderDate = DateTime.Now,
+                            };
+							_db.Order.Add(order);
+							_db.SaveChanges();
+
+							// Save order items (from the cart)
+							var cartItems = HttpContext.Session.Get<List<CartItemVm>>("cartItems");
+							if (cartItems != null)
+							{
+								foreach (var cartItem in cartItems)
+								{
+									var orderDetail = new OrderDetails
+									{
+										OrderID = order.OrderID,
+										ProductID = cartItem.Product.ProductID,
+										Quantity = cartItem.Quantity,
+										UnitPrice = cartItem.Product.Price
+									};
+									_db.OrderDetails.Add(orderDetail);
+								}
+								_db.SaveChanges();
+							}
+
+							// Clear the cart in the session
+							HttpContext.Session.Set("cartItems", new List<CartItemVm>());
+
+							return new JsonResult("success");
+                        }
+					}
+				}
+			}
+
+			return new JsonResult("error");
+        }
+
+        /*
+        public async Task<string> Token ()
+        {
+            return await GetPaypalAccessToken();
+        }
+        */
 	}
 }

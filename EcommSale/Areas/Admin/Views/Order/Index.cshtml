@@ -17,6 +17,7 @@
 		<tr class="yellow-shop text-black">
 			<th>Order Date</th>
 			<th>Customer Username</th>
+			<th>Payment Method</th>
 			<th></th>
 		</tr>
 		@foreach (var item in Model)
@@ -24,6 +25,7 @@
 			<tr class="text-black" style="opacity: 90%;">
 				<td>@item.OrderDate</td>
 				<td>@item.User.UserName</td>
+				<td>@item.PaymentType</td>
 				<td style="width: 50px">
 					<div class="btn-group">
 						<a asp-action="Details" class="btn btn-green" asp-route-id="@item.OrderID">

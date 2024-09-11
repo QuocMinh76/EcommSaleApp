@@ -12,6 +12,9 @@ namespace EcommSale.Models
         [Display(Name = "Order Date")]
         public DateTime OrderDate { get; set; }
 
+        [Display(Name = "Payment Type")]
+        public string PaymentType { get; set; }
+
         [Display(Name = "User ID")]
         [ForeignKey("Id")]
         public string UserID { get; set; }

@@ -9,15 +9,15 @@
 		cartItems = new List<CartItemVm>();
 	}
 }
-
+<script src="https://sandbox.paypal.com/sdk/js?client-id=@(ViewBag.PaypalClientId)&components=buttons,funding-eligibility"></script>
 <br />
-
 <h2 class="text-black">Checkout</h2>
-<form asp-action="Checkout" method="post" enctype="multipart/form-data">
+<form asp-action="Checkout" method="post" enctype="multipart/form-data" class="row">
 	<div class="p-4 rounded border row text-black fw-bold">
 		<div asp-validation-summary="ModelOnly" class="text-danger">
 		</div>
 		<input type="hidden" asp-for="Order.UserID" />
+		<input id="totalAmount" type="hidden" value="@(ViewBag.USDTotal)" />
 		<div class="mb-3 row">
 			<div class="col-6">
 				<div class="col-4">
@@ -88,6 +88,7 @@
 				<h4>Total Price: @string.Format("{0:N0} VND", Model.CartItems.Sum(c => c.Quantity * c.Product.Price))</h4>
 			</div>
 		</div>
+		<div class="mb-3 row" id="notification-container"></div>
 		<div class="mb-3 row">
 			<div class="col-4">
 				@if (User.IsInRole("Admin"))
@@ -98,16 +99,15 @@
 				{
 					<input type="submit" id="bt_general" class="btn btn-green w-100" value="Checkout" />
 				}
+				
 			</div>
-			<div class="col-4">
-				<a class="btn btn-blue w-100">PayPal</a>
-			</div>
+			<div class="col-4" id="paypal-button-container"></div>
 			<div class="col-4">
 				<a id="bt_general" asp-action="Cart" class="btn btn-red w-100">Back to Cart</a>
 			</div>
 		</div>
-
 	</div>
+	
 </form>
 
 @section Scripts {
@@ -115,3 +115,87 @@
 		await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
 	}
 }
+
+<script>
+	paypal.Buttons({
+		async createOrder() {
+			const response = await fetch("@Url.ActionLink("CreateOrder", "Home")", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					amount: document.getElementById("totalAmount").value
+				})
+			});
+
+			const order = await response.json();
+			return order.id;
+		},
+		async onApprove(data) {
+			// Capture the funds from the transaction.
+			const response = await fetch("@Url.ActionLink("CompleteOrder", "Home")", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					orderID: data.orderID
+				})
+			})
+
+			const details = await response.json();
+
+			// Show success message to buyer
+			if (details == "success") {
+				document.getElementById("notification-container").innerHTML = `
+							<div class='alert alert-success alert-dismissible fade show', role="alert">
+								<strong>The order is created successfully! Redirect to Home in 3 seconds.</strong>
+								<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+							</div>
+					`;
+				// Refresh the page after a short delay
+				setTimeout(function () {
+					window.location.reload();
+				}, 3000); // 3-second delay before refreshing the page
+			}
+			else {
+				document.getElementById("notification-container").innerHTML = `
+								<div class='alert alert-danger alert-dismissible fade show', role="alert">
+									<strong>Failed to create the order!</strong>
+									<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+								</div>
+						`;
+			}
+		},
+
+		onCancel(data) {
+			document.getElementById("notification-container").innerHTML = `
+									<div class='alert alert-danger alert-dismissible fade show', role="alert">
+										<strong>Payment canceled!</strong>
+										<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+									</div>
+							`;
+		},
+
+		onError(err) {
+			document.getElementById("notification-container").innerHTML = `
+									<div class='alert alert-danger alert-dismissible fade show', role="alert">
+										<strong>An error occured! Please try again later.</strong>
+										<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+									</div>
+							`;
+		},
+
+		fundingSource: paypal.FUNDING.PAYPAL,
+		style: {
+			layout: 'vertical',
+			color: 'gold',
+			shape: 'rect',
+			label: 'paypal',
+			tagline: 'false',
+			height: 37.4
+		}
+	}).render('#paypal-button-container');
+</script>
+
