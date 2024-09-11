@@ -1,5 +1,6 @@
 using EcommSale.Data;
 using EcommSale.Models;
+using EcommSale.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,15 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddScoped<UserManager<ApplicationUser>>();
+
+// Currency thingy
+builder.Services.AddHttpClient<CurrencyService>(client =>
+{
+    client.BaseAddress = new Uri("https://v6.exchangerate-api.com/v6/d859b2f38baeb9cf47d56825/latest/VND"); // Example URL, replace with your chosen API
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+builder.Services.AddScoped<CurrencyService>();
 
 builder.Services.AddControllersWithViews();
 
