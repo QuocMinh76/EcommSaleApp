@@ -1,5 +1,6 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 namespace EcommSale.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private ApplicationDbContext _db;
@@ -45,7 +47,7 @@ namespace EcommSale.Areas.Admin.Controllers
                 var searchProduct = _db.Product.FirstOrDefault(c => c.ProductName == product.ProductName);
                 if (searchProduct != null) // Neu san pham da ton tai thi thong bao ra va lam moi combobox
                 {
-                    ViewBag.message = "This product already exists";
+                    ViewBag.ExistError = "This product already exists";
                     ViewData["categoryID"] = new SelectList(_db.Category.ToList(), "CategoryID", "CategoryName");
                     ViewData["brandID"] = new SelectList(_db.Brand.ToList(), "BrandID", "BrandName");
                     return View();
@@ -62,6 +64,8 @@ namespace EcommSale.Areas.Admin.Controllers
                 {
                     product.Image = "Images/noimage.png";
                 }
+
+                product.ProductCount = 0;
 
                 _db.Product.Add(product);
                 await _db.SaveChangesAsync();
@@ -96,6 +100,14 @@ namespace EcommSale.Areas.Admin.Controllers
         {
             var findProd = _db.Product.Where(c => c.ProductID == product.ProductID).AsNoTracking().FirstOrDefault();
 
+            var searchProduct = _db.Product.AsNoTracking().FirstOrDefault(c => c.ProductName == product.ProductName);
+            if (searchProduct != null && searchProduct.ProductID != product.ProductID) // Neu san pham da ton tai thi thong bao ra va lam moi combobox
+            {
+                ViewBag.ExistError = "This product already exists";
+                ViewData["categoryID"] = new SelectList(_db.Category.ToList(), "CategoryID", "CategoryName");
+                ViewData["brandID"] = new SelectList(_db.Brand.ToList(), "BrandID", "BrandName");
+                return View(product);
+            }
             ModelState.Clear();
             if (ModelState.IsValid)
             {

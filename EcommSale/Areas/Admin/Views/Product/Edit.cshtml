@@ -5,6 +5,12 @@
 }
 <br />
 <h2 class="text-black">Edit Product</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.ExistError))
+{
+    <div class="alert alert-danger">@ViewBag.ExistError</div>
+}
+
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
     <div class="p-4 rounded border row">
         <input type="hidden" asp-for="ProductID" />

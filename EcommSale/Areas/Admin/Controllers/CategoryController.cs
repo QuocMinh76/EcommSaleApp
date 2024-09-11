@@ -1,5 +1,6 @@
 ﻿using EcommSale.Data;
 using EcommSale.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EcommSale.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class CategoryController : Controller
     {
         private ApplicationDbContext db;
@@ -34,6 +36,13 @@ namespace EcommSale.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                var searchCategory = db.Category.FirstOrDefault(c => c.CategoryName == category.CategoryName);
+                if (searchCategory != null) // Neu san pham da ton tai thi thong bao ra va lam moi combobox
+                {
+                    ViewBag.ExistErrorCate = "This category already exists";
+                    return View(category);
+                }
+
                 db.Category.Add(category);
                 await db.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -62,6 +71,13 @@ namespace EcommSale.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                var searchCategory = db.Category.AsNoTracking().FirstOrDefault(c => c.CategoryName == category.CategoryName);
+                if (searchCategory != null && searchCategory.CategoryID != category.CategoryID) // Neu san pham da ton tai thi thong bao ra va lam moi combobox
+                {
+                    ViewBag.ExistErrorCate = "This category already exists";
+                    return View(category);
+                }
+
                 db.Update(category);
                 await db.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -81,6 +97,13 @@ namespace EcommSale.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+
+            if (TempData.ContainsKey("deleteError"))
+            {
+                // Pass the delete error message to the view using ViewBag
+                ViewBag.DeleteError = TempData["deleteError"];
+            }
+
             return View(category);
         }
 
@@ -100,6 +123,15 @@ namespace EcommSale.Areas.Admin.Controllers
             if (cate == null) {
                 return NotFound();
             }
+
+            var productsInCategory = await db.Product.AnyAsync(p => p.CategoryID == id);
+            if (productsInCategory)
+            {
+                // If there are products in this category, display a message
+                TempData["deleteError"] = "Cannot delete category. There are products associated with this category.";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+
             if (ModelState.IsValid)
             {
                 db.Remove(cate);

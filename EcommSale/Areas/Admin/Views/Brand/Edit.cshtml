@@ -5,6 +5,12 @@
 }
 <br />
 <h2 class="text-info">Edit Brand</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.ExistErrorBrand))
+{
+    <div class="alert alert-danger">@ViewBag.ExistErrorBrand</div>
+}
+
 <form asp-action="Edit" method="post">
     <div class="p-4 rounded border">
         <input type="hidden" asp-for="BrandID" />
